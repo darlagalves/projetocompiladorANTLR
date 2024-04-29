@@ -8,13 +8,13 @@ begin
 
     write(x);
     write('texto');
-    {write(10);
+    write(10);
 
     writeln(x);
     writeln('texto');
     writeln(10);
 
-    for x := 1 to 10 do begin
+    {for x := 1 to 10 do begin
         write(x);
         write(y);
     end;

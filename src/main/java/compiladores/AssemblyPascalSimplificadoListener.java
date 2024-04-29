@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import compiladores.PascalSimplificadoParser.ComandoContext;
+
 
 public class AssemblyPascalSimplificadoListener extends PascalSimplificadoBaseListener {
 
@@ -209,9 +211,6 @@ public class AssemblyPascalSimplificadoListener extends PascalSimplificadoBaseLi
                     if (!sectionData.contains("@Integer: db '%d',0")) {
                         sectionData.add("@Integer: db '%d',0");
                     }
-                    if (!sectionData.contains("@IntegerLN: db '%d',10,0")) {
-                        sectionData.add("@IntegerLN: db '%d',10,0");
-                    }
                 }
             }
         } else if (ctx.STRING_LITERAL() != null){
@@ -222,9 +221,39 @@ public class AssemblyPascalSimplificadoListener extends PascalSimplificadoBaseLi
             escreverCodigo("\tpush " + rotulo);
             escreverCodigo("\tcall printf");
             escreverCodigo("\tadd esp, 4");
-        }
+
+        } else if (ctx.INTEIRO() != null){
+            //A43
+            int numero = Integer.parseInt(ctx.INTEIRO().getText());
+            escreverCodigo("\tpush " + numero);
+            escreverCodigo("\tpush @Integer");
+            escreverCodigo("\tcall printf");
+            escreverCodigo("\tadd esp, 8");
+            if (!sectionData.contains("@Integer: db '%d',0")) {
+                sectionData.add("@Integer: db '%d',0");
+            }
+        } 
         
     }
+
+    public void exitComando(PascalSimplificadoParser.ComandoContext ctx) {  
+        if(ctx.WRITELN() != null){
+            //writeln (<exp_write>)
+            //A61
+            // Gerar um avanço de linha, ou seja, um line feed
+            //rotuloString2: db
+
+            String novaLinha = "rotuloStringLN: db '', 10, 0";
+            if(!sectionData.contains(novaLinha)){
+                sectionData.add(novaLinha);
+            }
+            escreverCodigo("\tpush rotuloStringLN");
+            escreverCodigo("\tcall printf");
+            escreverCodigo("\tadd esp, 4");
+        }
+
+    }
+
 
     
 }
