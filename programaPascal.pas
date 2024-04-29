@@ -7,8 +7,8 @@ begin
     read(x, y);}
 
     write(x);
-    {write('texto');
-    write(10);
+    write('texto');
+    {write(10);
 
     writeln(x);
     writeln('texto');

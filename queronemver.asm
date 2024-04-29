@@ -17,6 +17,9 @@ main: 	; Entrada do programa
 	push @Integer
 	call printf
 	add esp, 8
+	push rotuloString1
+	call printf
+	add esp, 4
 	leave
 	ret
 
@@ -24,3 +27,4 @@ section .data
 
 @Integer: db '%d',0
 @IntegerLN: db '%d',10,0
+rotuloString1: db 'texto', 0 

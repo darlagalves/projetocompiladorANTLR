@@ -13,7 +13,7 @@ public class AssemblyPascalSimplificadoListener extends PascalSimplificadoBaseLi
 
     private TabelaSimbolos tabela = new TabelaSimbolos();
     private String rotulo = "";
-    // private int contRotulo = 1;
+    private int contRotulo = 1;
     private int offsetVariavel = 0;
     private String nomeArquivoSaida;
     private String caminhoArquivoSaida;
@@ -51,11 +51,11 @@ public class AssemblyPascalSimplificadoListener extends PascalSimplificadoBaseLi
 	}
 
     //funcao para criar um rotulo
-    // private String criarRotulo(String texto) {
-	// 	String retorno = "rotulo" + texto + contRotulo;
-	// 	contRotulo++;
-	// 	return retorno;
-	// }
+    private String criarRotulo(String texto) {
+		String retorno = "rotulo" + texto + contRotulo;
+		contRotulo++;
+		return retorno;
+	}
 
 
     public void enterPrograma(PascalSimplificadoParser.ProgramaContext ctx) {
@@ -191,28 +191,39 @@ public class AssemblyPascalSimplificadoListener extends PascalSimplificadoBaseLi
     // pilha (EBP) e do
     // deslocamento contido em display.
     public void exitExp_write(PascalSimplificadoParser.Exp_writeContext ctx) {
-        String variavel = ctx.IDENTIFICADOR().getText();
-        if (!tabela.isPresent(variavel)) {
-            System.err.println("Variável " + variavel + " não foi declarada");
-            System.exit(-1);
-        } else {
-            TabSimRec registro = tabela.get(variavel);
-            if (registro.getCategoria() != Categoria.VARIAVEL) {
-                System.err.println("Identificador " + variavel + " não é uma variável");
+        if(ctx.IDENTIFICADOR() != null){
+            String variavel = ctx.IDENTIFICADOR().getText();
+            if (!tabela.isPresent(variavel)) {
+                System.err.println("Variável " + variavel + " não foi declarada");
                 System.exit(-1);
             } else {
-                escreverCodigo("\tpush dword[ebp - " + registro.getOffset() + "]");
-                escreverCodigo("\tpush @Integer");
-                escreverCodigo("\tcall printf");
-                escreverCodigo("\tadd esp, 8");
-                if (!sectionData.contains("@Integer: db '%d',0")) {
-                    sectionData.add("@Integer: db '%d',0");
-                }
-                if (!sectionData.contains("@IntegerLN: db '%d',10,0")) {
-                    sectionData.add("@IntegerLN: db '%d',10,0");
+                TabSimRec registro = tabela.get(variavel);
+                if (registro.getCategoria() != Categoria.VARIAVEL) {
+                    System.err.println("Identificador " + variavel + " não é uma variável");
+                    System.exit(-1);
+                } else {
+                    escreverCodigo("\tpush dword[ebp - " + registro.getOffset() + "]");
+                    escreverCodigo("\tpush @Integer");
+                    escreverCodigo("\tcall printf");
+                    escreverCodigo("\tadd esp, 8");
+                    if (!sectionData.contains("@Integer: db '%d',0")) {
+                        sectionData.add("@Integer: db '%d',0");
+                    }
+                    if (!sectionData.contains("@IntegerLN: db '%d',10,0")) {
+                        sectionData.add("@IntegerLN: db '%d',10,0");
+                    }
                 }
             }
+        } else if (ctx.STRING_LITERAL() != null){
+            //A59
+            String string = ctx.STRING_LITERAL().getText();
+            String rotulo = criarRotulo("String");
+            sectionData.add(rotulo + ": db " + string + ", 0 ");
+            escreverCodigo("\tpush " + rotulo);
+            escreverCodigo("\tcall printf");
+            escreverCodigo("\tadd esp, 4");
         }
+        
     }
 
     
